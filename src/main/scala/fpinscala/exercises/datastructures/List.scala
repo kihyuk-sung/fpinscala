@@ -58,10 +58,10 @@ object List: // `List` companion object. Contains functions for creating and wor
 
   @tailrec
   def drop[A](l: List[A], n: Int): List[A] =
-    (n, l) match
-      case (0, _) => l
-      case (_, Nil) => Nil
-      case (_, Cons(_, t)) => drop(t, n - 1)
+    if n <= 0 then l
+    else l match
+      case Nil => Nil
+      case Cons(_, t) => drop(t, n - 1)
 
   @tailrec
   def dropWhile[A](l: List[A], f: A => Boolean): List[A] =
@@ -71,7 +71,7 @@ object List: // `List` companion object. Contains functions for creating and wor
 
   def init[A](l: List[A]): List[A] =
     l match
-      case Nil => Nil
+      case Nil => sys.error("init of empty list")
       case Cons(_, Nil) => Nil
       case Cons(h, t) => Cons(h, init(t))
 
@@ -117,15 +117,10 @@ object List: // `List` companion object. Contains functions for creating and wor
   def filterViaFlatMap[A](as: List[A], f: A => Boolean): List[A] =
     flatMap(as, a => if f(a) then Cons(a, Nil) else Nil)
 
-  def addPairwise(a: List[Int], b: List[Int]): List[Int] =
-    @tailrec
-    def loop(a: List[Int], b: List[Int], acc: List[Int]): List[Int] =
-      (a, b) match
-        case (Nil, Nil) => acc
-        case (_, Nil) => Nil
-        case (Nil, _) => Nil
-        case (Cons(aH, aT), Cons(bH, bT)) => loop(aT, bT, Cons(aH + bH, acc))
-    reverse(loop(a, b, Nil))
+  def addPairwise(a: List[Int], b: List[Int]): List[Int] = (a, b) match
+    case (Nil, _) => Nil
+    case (_, Nil) => Nil
+    case (Cons(h1, t1), Cons(h2, t2)) => Cons(h1 + h2, addPairwise(t1, t2))
 
   def zipWith[A, B, C](a: List[A], b: List[B], f: (A, B) => C): List[C] =
     @tailrec
